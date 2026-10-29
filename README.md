@@ -2,7 +2,7 @@
 
 A single-page review surface that helps a QA reviewer decide whether each call summary accurately represents its transcript, and whether it needs correcting.
 
-**Live app:** [add your GitHub Pages URL here]. No login or setup is needed.
+**Live app:** [(https://yasinali23.github.io/qa-reviewer/)]. No login or setup is needed.
 
 ## How to run and check
 
