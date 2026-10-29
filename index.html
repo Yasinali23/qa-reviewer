@@ -92,6 +92,10 @@ ol { list-style:none; margin:0; padding:0; }
 .none { margin:0; color:var(--muted); font-size:14px; }
 .overview { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:20px 0; }
 .overview h2 { margin:0 0 4px; font-size:19px; }
+.overall { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:8px 0 10px; padding:12px 14px;
+  border:1px solid var(--line); border-radius:8px; background:var(--bg); }
+.obadge { font-size:16px; padding:4px 12px; }
+.oreason { font-size:14px; }
 .totals { margin:0 0 12px; color:var(--muted); font-size:14px; }
 .ovlist { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:8px; }
 .ovlist li { display:flex; justify-content:space-between; align-items:center; gap:8px;
@@ -124,6 +128,10 @@ ol { list-style:none; margin:0; padding:0; }
 <main>
 <section class="overview" aria-live="polite">
   <h2>Results</h2>
+  <div class="overall">
+    <span class="rlabel">Overall result</span><span class="badge obadge"></span>
+    <span class="oreason"></span>
+  </div>
   <p class="totals"></p>
   <ol class="ovlist"><li><a href="#CALL-001">CALL-001</a><span class="badge ovb s-supported" id="top-CALL-001">PASS</span></li><li><a href="#CALL-002">CALL-002</a><span class="badge ovb s-unclear" id="top-CALL-002">NOT FINAL</span></li><li><a href="#CALL-003">CALL-003</a><span class="badge ovb s-unclear" id="top-CALL-003">NOT FINAL</span></li><li><a href="#CALL-004">CALL-004</a><span class="badge ovb s-supported" id="top-CALL-004">PASS</span></li><li><a href="#CALL-005">CALL-005</a><span class="badge ovb s-supported" id="top-CALL-005">PASS</span></li><li><a href="#CALL-006">CALL-006</a><span class="badge ovb s-supported" id="top-CALL-006">PASS</span></li><li><a href="#CALL-007">CALL-007</a><span class="badge ovb s-unclear" id="top-CALL-007">NOT FINAL</span></li><li><a href="#CALL-008">CALL-008</a><span class="badge ovb s-supported" id="top-CALL-008">PASS</span></li><li><a href="#CALL-009">CALL-009</a><span class="badge ovb s-supported" id="top-CALL-009">PASS</span></li><li><a href="#CALL-010">CALL-010</a><span class="badge ovb s-unclear" id="top-CALL-010">NOT FINAL</span></li><li><a href="#CALL-011">CALL-011</a><span class="badge ovb s-supported" id="top-CALL-011">PASS</span></li><li><a href="#CALL-012">CALL-012</a><span class="badge ovb s-unclear" id="top-CALL-012">NOT FINAL</span></li><li><a href="#CALL-013">CALL-013</a><span class="badge ovb s-supported" id="top-CALL-013">PASS</span></li><li><a href="#CALL-014">CALL-014</a><span class="badge ovb s-supported" id="top-CALL-014">PASS</span></li><li><a href="#CALL-015">CALL-015</a><span class="badge ovb s-supported" id="top-CALL-015">PASS</span></li><li><a href="#CALL-016">CALL-016</a><span class="badge ovb s-unclear" id="top-CALL-016">NOT FINAL</span></li><li><a href="#CALL-017">CALL-017</a><span class="badge ovb s-supported" id="top-CALL-017">PASS</span></li><li><a href="#CALL-018">CALL-018</a><span class="badge ovb s-supported" id="top-CALL-018">PASS</span></li><li><a href="#CALL-019">CALL-019</a><span class="badge ovb s-unclear" id="top-CALL-019">NOT FINAL</span></li><li><a href="#CALL-020">CALL-020</a><span class="badge ovb s-supported" id="top-CALL-020">PASS</span></li></ol>
 </section>
@@ -618,6 +626,19 @@ ol { list-style:none; margin:0; padding:0; }
     var t = {'PASS': 0, 'NEEDS EDITS': 0, 'NOT FINAL': 0, 'FAIL': 0}, done = 0, all = 0;
     document.querySelectorAll('.ovb').forEach(function (b) { t[b.textContent]++; });
     document.querySelectorAll('.review-item').forEach(function (it) { all++; if (dec(it)) done++; });
+    // Overall result: the verdict rules applied across every call, in the same order.
+    var by = {'FAIL': [], 'NOT FINAL': [], 'NEEDS EDITS': [], 'PASS': []};
+    document.querySelectorAll('.ovb').forEach(function (b) { by[b.textContent].push(b.id.replace('top-', '')); });
+    var o = by['FAIL'].length ? 'FAIL' : by['NOT FINAL'].length ? 'NOT FINAL' : by['NEEDS EDITS'].length ? 'NEEDS EDITS' : 'PASS';
+    var why = {
+      'FAIL': 'CRITICAL error in ' + by['FAIL'].join(', '),
+      'NOT FINAL': 'No CRITICAL errors, but UNCLEAR items still to decide in ' + by['NOT FINAL'].join(', '),
+      'NEEDS EDITS': 'No CRITICAL or UNCLEAR items; HIGH or MEDIUM errors in ' + by['NEEDS EDITS'].join(', '),
+      'PASS': 'Only LOW issues or none across all ' + by['PASS'].length + ' calls'
+    }[o];
+    var ob = document.querySelector('.obadge');
+    ob.className = 'badge obadge ' + VCLS[o]; ob.textContent = o;
+    document.querySelector('.oreason').textContent = why;
     document.querySelector('.totals').textContent =
       Object.keys(t).map(function (k) { return t[k] + ' ' + k; }).join(' · ') +
       ' · ' + done + ' of ' + all + ' items reviewed';
